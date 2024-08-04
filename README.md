@@ -1,8 +1,8 @@
 # Youtube Channel Data Analytics Project
 
-##This Project focuses on providing you the information of the respective channel ID put in the box
+## This Project focuses on providing you the information of the respective channel ID put in the box
 
-##Features:-
+## Features:-
   ### Name of Channel
   ### Views
   ### Subscribers
