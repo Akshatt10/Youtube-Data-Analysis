@@ -66,10 +66,12 @@ def prepare_data(video_data):
     video_details['Year'] = video_details['Published_date'].dt.year
     videos_per_year = video_details.groupby('Year').size().reset_index(name='Count')
     
-    shorts = video_details[video_details['Duration'] < 60]
-    regular_videos = video_details[video_details['Duration'] >= 60]
+    # Filter out videos shorter than 60 seconds
+    long_videos = video_details[video_details['Duration'] > 60]
+    shorts = video_details[video_details['Duration'] <= 60]
     
-    top10_videos_all_time = video_details.sort_values(by='Views', ascending=False).head(10)
+    # Determine top 10 videos by views from long videos only
+    top10_videos_all_time = long_videos.sort_values(by='Views', ascending=False).head(10)
     top10_shorts_all_time = shorts.sort_values(by='Views', ascending=False).head(10)
     
     return top10_videos_all_time, top10_shorts_all_time, videos_per_year, shorts
@@ -89,7 +91,7 @@ def plot_shorts_per_month(shorts):
     
     plt.figure(figsize=(12, 8))
     sns.barplot(x='Published_date', y='Count', data=shorts_per_month, palette='viridis')
-    plt.title('Number of Shorts Published per Month (Last Year)')
+    plt.title('Number of Shorts Published per Month')
     plt.xlabel('Month')
     plt.ylabel('Number of Shorts')
     plt.xticks(rotation=45, ha='right')
@@ -105,9 +107,7 @@ def plot_top10_shorts(top10_shorts):
     plt.tight_layout()
     return plt.gcf()
 
-
 # BUILDING STREAMLIT APP.....
-
 
 st.title('YouTube Channel Data Analytics')
 
