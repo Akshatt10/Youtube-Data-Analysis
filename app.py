@@ -98,19 +98,19 @@ def fetch_video_stats(api_key, playlist_id):
 
 def analyze_data(video_data):
     video_details = pd.DataFrame(video_data)
-    video_details['Published_date'] = pd.to_datetime(video_details['Published_date']).dt.date
+    video_details['Published_date'] = pd.to_datetime(video_details['Published_date'])
     video_details['Views'] = pd.to_numeric(video_details['Views'])
     video_details['Comments'] = pd.to_numeric(video_details['Comments'])
     
     # Filter for the last 2 years
-    end_date = pd.to_datetime('today').date()
+    end_date = pd.Timestamp('today')
     start_date = end_date - pd.DateOffset(years=2)
     video_details = video_details[video_details['Published_date'] >= start_date]
 
     # Convert duration to seconds for fetching the SHORTS in coming code
     video_details['Duration'] = pd.to_timedelta(video_details['Duration']).dt.total_seconds()
 
-    # Seperating the short videos that is the videos which are < 60 seconds
+    # Separating the short videos that is the videos which are < 60 seconds
     shorts = video_details[video_details['Duration'] < 60]
     regular_videos = video_details[video_details['Duration'] >= 60]
 
@@ -119,7 +119,7 @@ def analyze_data(video_data):
     top10_shorts = shorts.sort_values(by='Views', ascending=False).head(10)
 
     # Month data for Shorts and regular videos
-    video_details['Month'] = pd.to_datetime(video_details['Published_date']).dt.strftime('%Y-%b')
+    video_details['Month'] = video_details['Published_date'].dt.strftime('%Y-%b')
 
     # Group by month and year
     videos_per_month = video_details.groupby('Month', as_index=False).size()
