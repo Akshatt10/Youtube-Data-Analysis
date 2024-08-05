@@ -98,55 +98,52 @@ def fetch_video_stats(api_key, playlist_id):
 
 def analyze_data(video_data):
     video_details = pd.DataFrame(video_data)
-    video_details['Published_date'] = pd.to_datetime(video_details['Published_date']).dt.date
     video_details['Views'] = pd.to_numeric(video_details['Views'])
     video_details['Comments'] = pd.to_numeric(video_details['Comments'])
     
-    # Filter for the last 2 years
-    end_date = pd.to_datetime('today').date()
-    start_date = end_date - pd.DateOffset(years=2)
-    video_details = video_details[video_details['Published_date'] >= start_date]
-
-    # Convert duration to seconds for fetching the SHORTS in coming code
+    # Convert duration to seconds
     video_details['Duration'] = pd.to_timedelta(video_details['Duration']).dt.total_seconds()
 
-    # Seperating the short videos that is the videos which are < 60 seconds
+    # Separate short videos (less than 60 seconds) from regular videos
     shorts = video_details[video_details['Duration'] < 60]
     regular_videos = video_details[video_details['Duration'] >= 60]
 
-    # Top 10 normal videos on the basis of views
+    # Top 10 normal videos based on views
     top10_videos = regular_videos.sort_values(by='Views', ascending=False).head(10)
     top10_shorts = shorts.sort_values(by='Views', ascending=False).head(10)
 
-    # Month data for Shorts and regular videos
-    video_details['Month'] = pd.to_datetime(video_details['Published_date']).dt.strftime('%Y-%b')
+    # Extract month and year from the published date
+    video_details['Month'] = pd.to_datetime(video_details['Published_date']).dt.to_period('M').astype(str)
 
-    # Group by month and year
-    videos_per_month = video_details.groupby('Month', as_index=False).size()
+    # Group by month and year for all videos
+    videos_per_month = video_details.groupby('Month').size().reset_index(name='size')
 
     # Sort by month and year
-    videos_per_month['Month'] = pd.to_datetime(videos_per_month['Month'], format='%Y-%b')
+    videos_per_month['Month'] = pd.to_datetime(videos_per_month['Month'], format='%Y-%m')
     videos_per_month = videos_per_month.sort_values('Month')
 
     # Plotting videos per month
     plt.figure(figsize=(12, 8))
-    sns.barplot(x=videos_per_month['Month'].dt.strftime('%Y-%b'), y='size', data=videos_per_month, palette='viridis')
+    sns.barplot(x='Month', y='size', data=videos_per_month, palette='viridis')
     plt.title('Number of Videos Published per Month')
     plt.xlabel('Month')
     plt.ylabel('Number of Videos')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
-    plt.show()
+    st.pyplot(plt.gcf())
 
-    # Month data for Shorts
-    shorts['Month'] = pd.to_datetime(shorts['Published_date']).dt.strftime('%Y-%b')
-    shorts_per_month = shorts.groupby('Month', as_index=False).size()
+    # Extract month and year from the published date for shorts
+    shorts['Month'] = pd.to_datetime(shorts['Published_date']).dt.to_period('M').astype(str)
+    shorts_per_month = shorts.groupby('Month').size().reset_index(name='size')
 
     # Sort by month and year
-    shorts_per_month['Month'] = pd.to_datetime(shorts_per_month['Month'], format='%Y-%b')
+    shorts_per_month['Month'] = pd.to_datetime(shorts_per_month['Month'], format='%Y-%m')
     shorts_per_month = shorts_per_month.sort_values('Month')
 
     return top10_videos, top10_shorts, videos_per_month, shorts_per_month
+
+
+
 
 # STARTING BUILDING THE STREAMLIT APP....
 
