@@ -98,6 +98,7 @@ def fetch_video_stats(api_key, playlist_id):
 
 def analyze_data(video_data):
     video_details = pd.DataFrame(video_data)
+<<<<<<< HEAD
     video_details['Views'] = pd.to_numeric(video_details['Views'])
     video_details['Comments'] = pd.to_numeric(video_details['Comments'])
     
@@ -105,6 +106,21 @@ def analyze_data(video_data):
     video_details['Duration'] = pd.to_timedelta(video_details['Duration']).dt.total_seconds()
 
     # Separate short videos (less than 60 seconds) from regular videos
+=======
+    video_details['Published_date'] = pd.to_datetime(video_details['Published_date'])
+    video_details['Views'] = pd.to_numeric(video_details['Views'])
+    video_details['Comments'] = pd.to_numeric(video_details['Comments'])
+    
+    # Filter for the last 2 years
+    end_date = pd.Timestamp('today')
+    start_date = end_date - pd.DateOffset(years=2)
+    video_details = video_details[video_details['Published_date'] >= start_date]
+
+    # Convert duration to seconds for fetching the SHORTS in coming code
+    video_details['Duration'] = pd.to_timedelta(video_details['Duration']).dt.total_seconds()
+
+    # Separating the short videos that is the videos which are < 60 seconds
+>>>>>>> ed5dd0c3991d4da118618d49b182e88888d908d2
     shorts = video_details[video_details['Duration'] < 60]
     regular_videos = video_details[video_details['Duration'] >= 60]
 
@@ -112,8 +128,13 @@ def analyze_data(video_data):
     top10_videos = regular_videos.sort_values(by='Views', ascending=False).head(10)
     top10_shorts = shorts.sort_values(by='Views', ascending=False).head(10)
 
+<<<<<<< HEAD
     # Extract month and year from the published date
     video_details['Month'] = pd.to_datetime(video_details['Published_date']).dt.to_period('M').astype(str)
+=======
+    # Month data for Shorts and regular videos
+    video_details['Month'] = video_details['Published_date'].dt.strftime('%Y-%b')
+>>>>>>> ed5dd0c3991d4da118618d49b182e88888d908d2
 
     # Group by month and year for all videos
     videos_per_month = video_details.groupby('Month').size().reset_index(name='size')
